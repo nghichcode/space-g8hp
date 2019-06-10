@@ -1,0 +1,11 @@
+Js & NodeJs snippets
+Js prettier
+
+Emmet
+Babel
+Babel snippets
+SublimeCodeIntel
+
+AutoFileName
+
+Anaconda snippets - Python
