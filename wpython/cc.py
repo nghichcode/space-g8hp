@@ -25,7 +25,7 @@ def decrypt_img() :
     n_img = Image.fromarray(imgs)
     n_img.save('cypu.jpg')
     
-decrypt_img()
+# decrypt_img()
 
 #two = [[1, 2, 3], [2, 4, 5], [5, 4, 5]]
 #for i in two:
@@ -36,3 +36,5 @@ decrypt_img()
 #print(5//3)
 #print(6//3)
 #print(round(6/3))
+# DEFAULT_DIR = "CC"
+# print(DEFAULT_DIR)
