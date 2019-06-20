@@ -11,22 +11,14 @@ app = wx.App()
 
 class NCBox ( wx.Dialog ):
 	
-	def __init__(self, *args, **kw):
+	def __init__(self, tbody, *args, **kw):
 		super(NCBox, self).__init__(*args, **kw)
-		txt = """
-Name :  NCIC
-Version : 1.2
-Last release : 20/06/2019
-Contact : nghichcode@gmail.com
-COPYRIGHT @2019 nghichcode (nghichcode.com)
-		"""
-
 		# wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
+
 		parentBX = wx.BoxSizer( wx.VERTICAL )
 
-		self.hpl = hl.HyperLinkCtrl(self, -1, "Visit NghichCode", pos=(100, 100),
-			URL="https://nghichcode.com/")
-		self.stxt = wx.StaticText( self, wx.ID_ANY, txt )
+		self.hpl = hl.HyperLinkCtrl(self, -1, "Visit NghichCode", URL="https://nghichcode.com/")
+		self.stxt = wx.StaticText( self, wx.ID_ANY, tbody )
 		parentBX.Add( self.stxt, 0, wx.ALL, 5 )
 		parentBX.Add( self.hpl, 0, wx.ALL, 5 )
 
@@ -189,11 +181,19 @@ class NcImageCheck ( wx.Frame ):
 		    break
 
 	def on_guide( self, event ):
-		wx.MessageBox(
+		nb=NCBox(
 			"""
-            Input
+Name :  NCIC
+Version : 1.2
+Last release : 20/06/2019
+Contact : nghichcode@gmail.com
+COPYRIGHT @2019 nghichcode (nghichcode.com)
 			""",
-			"NCIC User Guide")
+			None,
+			title="NCIC User Guide",
+			style = wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
+		)
+		nb.Show()
 
 	def on_exit( self, event ):
 		app.ExitMainLoop()
@@ -210,9 +210,16 @@ class NcImageCheck ( wx.Frame ):
 		# 	""",
 		# "NCIC About")
 
-		nb=NCBox(None,
+		nb=NCBox(
+			"""
+Name :  NCIC
+Version : 1.2
+Last release : 20/06/2019
+Contact : nghichcode@gmail.com
+COPYRIGHT @2019 nghichcode (nghichcode.com)
+			""",
+			None,
 			title="NCIC About",
-			size = wx.Size(800,300),
 			style = wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
 		)
 		nb.Show()
