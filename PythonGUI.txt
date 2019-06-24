@@ -1,3 +1,8 @@
+# EXE file
+pip install pyinstaller
+pip install wxPython
+
+
 Anaconda
 	Anaconda2-2019.03-Windows-x86_64
 wxFormBuilder
