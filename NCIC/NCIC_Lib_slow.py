@@ -1,49 +1,50 @@
 import os
 import numpy as np
-#from PIL import Image
-#import matplotlib.pyplot as plt
+from PIL import Image
+import matplotlib.pyplot as plt
 from datetime import datetime
 import shutil
 import math
-import cv2
 # Task : save dir, response to global
 
 def compareIMG(cf, ioim ,inim, w=1, h=1, ipsx=0, ipsy=0, ipex=0, ipey=0) :
-	if ( (ipsx>ipex and ipex!=-1) or (ipsy>ipey and ipey!=-1) ): return "Err <>"
+	if (ipsx>ipex or ipsy>ipey): return "Err <>"
 	print(1,datetime.now())
 	try:
-		doimg = cv2.imread(cf+ioim)
-		dnimg = cv2.imread(cf+inim)
+		doimg = Image.open(cf+ioim)
+		dnimg = Image.open(cf+inim)
 	except IOError:
 		print("Can not open")
-		return
-	print(2,datetime.now())
+		return "Cant open"
 	match=True
 
-	adoimg = cv2.cvtColor(doimg, cv2.COLOR_BGR2GRAY)
-	adnimg = cv2.cvtColor(dnimg, cv2.COLOR_BGR2GRAY)
-	if (len(adoimg)<len(adnimg) or len(adoimg[0])<len(adnimg[0]) ): return "Err L"
-	IHEIGHT=len(adoimg)
-	IWIDTH= len(adoimg[0])
-	if (ipex==-1): ipex=IWIDTH
-	if (ipey==-1): ipey=IHEIGHT
-	adoimg[ipsy:ipey,ipsx:ipex]=0
-	adnimg[ipsy:ipey,ipsx:ipex]=0
+	adoimg = np.array(doimg)
+	adnimg = np.array(dnimg)
+	IHEIGHT=len(adoimg) if (len(adoimg)<len(adnimg)) else len(adnimg)
+	IWIDTH= len(adoimg[0]) if (len(adoimg[0])<len(adnimg[0])) else len(adnimg[0])
+	omColor={};nmColor={};
 
-	asf = np.absolute(np.subtract( np.array(adoimg,np.int8),np.array(adnimg,np.int8) ))
-	adf = np.where(asf>3,1,0)
-	sdf = np.sum(adf)
-	glf = (sdf/(IWIDTH*IHEIGHT-(ipex-ipsx)*(ipey-ipsy)))*100
-	adoimg=np.where(adf!=0,222,adoimg)
-	adnimg=np.where(adf!=0,222,adnimg)
-	print( glf, "% diff" )
+	print(2,datetime.now())
+	# for i in range(IHEIGHT):
+	# 	for j in range(IWIDTH):
+	# 		if ( (j>=ipsx and j<ipex) and (i>=ipsy and i<ipey) ): avg=250; # Remove Time - WHITE
+	# 		else : avg = (int(adoimg[i,j,0]) + int(adoimg[i,j,1]) + int(adoimg[i,j,2]))//3;
+	# 		adoimg[i,j]=[avg,avg,avg]
+	# 		omColor[avg] = omColor[avg]+1 if (avg in omColor) else 1
+	# 		if ( (j>=ipsx and j<ipex) and (i>=ipsy and i<ipey) ): avg=250; # Remove Time - WHITE
+	# 		else : avg = (int(adnimg[i,j,0]) + int(adnimg[i,j,1]) + int(adnimg[i,j,2]))//3;
+	# 		adnimg[i,j]=[avg,avg,avg]
+	# 		nmColor[avg] = nmColor[avg]+1 if (avg in nmColor) else 1
+
 	print(3,datetime.now())
-
-	cv2.imwrite('io.jpg',adoimg)
-	cv2.imwrite('in.jpg',adnimg)
-	return
+	# OBG=0;NBG=0;MXO=0;MXN=0;
+	# for k,v in omColor.items():
+	# 	if (v>MXO): OBG=k;MXO=v;
+	# for k,v in nmColor.items():
+	# 	if (v>MXN): NBG=k;MXN=v;
+	# SET-BGCOLOR - G
 	# DIFF - R
-	print(3,datetime.now())
+	print(4,datetime.now())
 	GEP=0;
 	for i in range(0,(IHEIGHT-h),h):
 		for j in range(0,(IWIDTH-w),w):
@@ -53,29 +54,30 @@ def compareIMG(cf, ioim ,inim, w=1, h=1, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 			for hi in range(i,(i+h)):
 				for wj in range(j,(j+w)):
 					if ( (wj>=ipsx and wj<ipex) and (hi>=ipsy and hi<ipey) ): continue;
-					lpara = abs(int(adoimg[hi,wj]) - int(adnimg[hi,wj]))
-					GEP+=(lpara)
+					oavg = (int(adoimg[hi,wj,0]) + int(adoimg[hi,wj,1]) + int(adoimg[hi,wj,2]))//3;
+					navg = (int(adnimg[hi,wj,0]) + int(adnimg[hi,wj,1]) + int(adnimg[hi,wj,2]))//3;
+					# if (adoimg[hi,wj,0] == OBG): adoimg[hi,wj]=[0,255,0];
+					# if (adnimg[hi,wj,0] == NBG): adnimg[hi,wj]=[0,255,0];
+					# lpara = abs(int(adoimg[hi,wj,0]) - int(adnimg[hi,wj,0]))
+					lpara = abs(int(oavg) - int(navg))
 					if ( lpara!=0 and lpara!=para ) :
 						eper+=1; para=lpara if (para==-1) else -1;
-			# GEP+=eper
-			# if (eper/(h*w)>(50/100)):
-			# 	match=False
-			# 	for hi in range(i,(i+h)):
-			# 		for wj in range(j,(j+w)):
-			# 				adoimg[hi,wj]=[255,0,0];adnimg[hi,wj]=[255,0,0];
-	print(4,datetime.now())
-	print(match,cf,GEP,"DIFFERENT "+str( math.trunc((GEP*10000)/(IWIDTH*IHEIGHT))/100 )+"%")
+			GEP+=eper
+			if (eper/(h*w)>(50/100)):
+				match=False
+				for hi in range(i,(i+h)):
+					for wj in range(j,(j+w)):
+							adoimg[hi,wj]=[255,0,0];adnimg[hi,wj]=[255,0,0];
+	print(5,datetime.now())
+	print(match,cf,"DIFFERENT "+str( math.trunc((GEP*10000)/(IWIDTH*IHEIGHT))/100 )+"%")
 
-	# simg = Image.fromarray(adoimg)
-	# simg.save('io.jpg')
+	simg = Image.fromarray(adoimg)
+	simg.save('io.jpg')
 	# simg.save(cf+"_OUT"+ioim)
-	# simg = Image.fromarray(adnimg)
-	# simg.save('in.jpg')
+	simg = Image.fromarray(adnimg)
+	simg.save('in.jpg')
 	# simg.save(cf+"_OUT"+inim)
 
-	cv2.imwrite('io.jpg',adoimg)
-	cv2.imwrite('in.jpg',adnimg)
-	print(5,datetime.now())
 	# plt.imshow(adoimg)
 	# plt.show()
 	# plt.imshow(adnimg)
@@ -83,8 +85,6 @@ def compareIMG(cf, ioim ,inim, w=1, h=1, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 	return match
 
 def get_data(cf, btn, w=0, h=0, ipsx=0, ipsy=0, ipex=0, ipey=0) :
-	print('gs',datetime.now())
-
 	try:
 		shutil.rmtree(cf+"_OUT")
 	except FileNotFoundError as fnf:
@@ -116,7 +116,7 @@ def get_data(cf, btn, w=0, h=0, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 			print('-------------------------------')
 			print('s',datetime.now())
 			print('----',diofs+"\\"+imofs[j],'----')
-			compareIMG(cf,diofs+"\\"+imofs[j],dinfs+"\\"+imnfs[j], 2, 2,ipex=-1,ipey=30)
+			compareIMG(cf,diofs+"\\"+imofs[j],dinfs+"\\"+imnfs[j], 20, 2,ipex=300,ipey=300)
 			print('e',datetime.now())
 			break;
 		break;

@@ -5,7 +5,8 @@ import wx
 import wx.xrc
 import wx.adv
 import wx.lib.agw.hyperlink as hl
-from NCIC_ION import ncio
+from NCIC_IO import ncio
+import NCIC_Lib as ncl
 
 COMPARE_FOLD = u".\\CompareFolder"
 
@@ -175,13 +176,17 @@ class NcImageCheck ( wx.Frame ):
 		print(event.GetPath())
 	
 	def start_compare( self, event ):
-		print("--------?-------")
-		print(COMPARE_FOLD)
-		for r, d, f in os.walk(COMPARE_FOLD):
-		    print(r)
-		    print(d)
-		    print(f)
-		    break
+		try:
+			ipsx = int(self.m_textCtrl1.GetLineText(0))
+			ipsy = int(self.m_textCtrl2.GetLineText(0))
+			ipex = int(self.m_textCtrl3.GetLineText(0))
+			ipey = int(self.m_textCtrl4.GetLineText(0))
+			accw = int(self.m_textCtrl5.GetLineText(0))
+			acch = int(self.m_textCtrl6.GetLineText(0))
+		except ValueError as e:
+			print("ValueError")
+			return
+		ncl.get_data(COMPARE_FOLD,self.m_button2,accw,acch,ipsx,ipsy,ipex,ipey)
 
 	def on_guide( self, event ):
 		nb=NCBox(
