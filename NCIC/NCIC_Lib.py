@@ -4,7 +4,6 @@ import numpy as np
 #import matplotlib.pyplot as plt
 from datetime import datetime
 import shutil
-import math
 import cv2
 # Task : save dir, response to global
 
@@ -16,55 +15,83 @@ def compareIMG(cf, ioim ,inim, w=1, h=1, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 		dnimg = cv2.imread(cf+inim)
 	except IOError:
 		print("Can not open")
-		return
+		return "Err CO"
 	print(2,datetime.now())
 	match=True
-
-	adoimg = cv2.cvtColor(doimg, cv2.COLOR_BGR2GRAY)
-	adnimg = cv2.cvtColor(dnimg, cv2.COLOR_BGR2GRAY)
+	# Black and white
+	adoimg = np.trunc(np.average(doimg, axis=2)).astype(int)
+	adnimg = np.trunc(np.average(dnimg, axis=2)).astype(int)
+#	adoimg = cv2.cvtColor(doimg, cv2.COLOR_BGR2GRAY)
+#	adnimg = cv2.cvtColor(dnimg, cv2.COLOR_BGR2GRAY)
+	# TRUNC IMG
 	if (len(adoimg)<len(adnimg) or len(adoimg[0])<len(adnimg[0]) ): return "Err L"
 	IHEIGHT=len(adoimg)
 	IWIDTH= len(adoimg[0])
+	#	RemoveIP
 	if (ipex==-1): ipex=IWIDTH
 	if (ipey==-1): ipey=IHEIGHT
 	adoimg[ipsy:ipey,ipsx:ipex]=0
 	adnimg[ipsy:ipey,ipsx:ipex]=0
+	# NEW ALGO
+	NIWIDTH=(IWIDTH-(IWIDTH % w)) if (w>1) else IWIDTH
+	NIHEIGHT=IHEIGHT-(IHEIGHT % h) if (h>1) else IHEIGHT
 
-	asf = np.absolute(np.subtract( np.array(adoimg,np.int8),np.array(adnimg,np.int8) ))
-	adf = np.where(asf>3,1,0)
-	sdf = np.sum(adf)
-	glf = (sdf/(IWIDTH*IHEIGHT-(ipex-ipsx)*(ipey-ipsy)))*100
-	adoimg=np.where(adf!=0,222,adoimg)
-	adnimg=np.where(adf!=0,222,adnimg)
-	print( glf, "% diff" )
+	ndoimg = adoimg[0:NIHEIGHT,0:NIWIDTH]
+	ndnimg = adnimg[0:NIHEIGHT,0:NIWIDTH]
+	ndsimg = np.absolute(np.subtract(ndoimg,ndnimg))
+	ndbimg = np.where(ndsimg>1,1,0)
+	# PARALA
+	if (w>1):
+		ndsimg = np.reshape(ndsimg, (-1,w) )
+		ndsimg = np.sum(ndsimg, axis=1)
+		ndsimg = np.reshape(ndsimg, (-1,int(IWIDTH/w)) )
+
+		ndbimg = np.reshape(ndbimg, (-1,w) )
+		ndbimg = np.sum(ndbimg, axis=1)
+		ndbimg = np.reshape(ndbimg, (-1,int(IWIDTH/w)) )
+	if (h>1):
+		ndsimg = ndsimg.T
+		ndsimg = np.reshape(ndsimg, (-1,h) )
+		ndsimg = np.sum(ndsimg, axis=1)
+		ndsimg = np.reshape(ndsimg, (-1,int(IHEIGHT/h)) )
+
+		ndbimg = ndbimg.T
+		ndbimg = np.reshape(ndbimg, (-1,h) )
+		ndbimg = np.sum(ndbimg, axis=1)
+		ndbimg = np.reshape(ndbimg, (-1,int(IHEIGHT/h)) )
+	# 1st : not para, 2nd : not diff in block
+	ndsimg = np.where(np.trunc(ndsimg/(w*h))==ndsimg/(w*h),1,0 )
+	ndbimg = np.where(ndbimg/(w*h)>0.5,1,0 )
+	ndwimg = np.bitwise_or(ndsimg,ndbimg)
+	ndffff = 100 * ( 1-np.average(ndwimg) )
+	print(3, "{0:.4f}% diff".format(ndffff) )
+
+	# Diff ALGO 2
+	aasf = np.absolute(np.subtract( adoimg,adnimg ))
+#	absf = np.add( adoimg,adnimg )
+	abwf = np.where(aasf>1 ,0,1)
+#	abwg = np.where(absf/2 == np.trunc(absf/2) ,1,0 )
+#	assf = np.bitwise_or(abwf,abwg)
+	assf = np.sum(abwf)
+	
+	awpf = (1-assf/(IWIDTH*IHEIGHT))*100
+	adoimg=np.where(abwf!=1,222,adoimg)
+	adnimg=np.where(abwf!=1,222,adnimg)
+	print(3, "{0:.4f}% diff".format(awpf) )
 	print(3,datetime.now())
 
-	cv2.imwrite('io.jpg',adoimg)
-	cv2.imwrite('in.jpg',adnimg)
+	cv2.imwrite(cf+"_OUT"+ioim,adoimg)
+	cv2.imwrite(cf+"_OUT"+inim,adnimg)
+
+	fwpa= open(cf+"_OUT_A1.txt","a+")
+	fwpa.write("\n---- "+ioim+"::"+inim)
+	fwpa.write("\n{0:.4f}% diff".format(ndffff) )
+	fwpa.close()
+	fwpb= open(cf+"_OUT_A2.txt","a+")
+	fwpb.write("\n---- "+ioim+"::"+inim)
+	fwpb.write("\n{0:.4f}% diff".format(awpf) )
+	fwpb.close()
 	return
-	# DIFF - R
-	print(3,datetime.now())
-	GEP=0;
-	for i in range(0,(IHEIGHT-h),h):
-		for j in range(0,(IWIDTH-w),w):
-			if(i+h>=IHEIGHT or w+j>=IWIDTH): print(hi,wj);break;
-
-			eper=0; para=-1;
-			for hi in range(i,(i+h)):
-				for wj in range(j,(j+w)):
-					if ( (wj>=ipsx and wj<ipex) and (hi>=ipsy and hi<ipey) ): continue;
-					lpara = abs(int(adoimg[hi,wj]) - int(adnimg[hi,wj]))
-					GEP+=(lpara)
-					if ( lpara!=0 and lpara!=para ) :
-						eper+=1; para=lpara if (para==-1) else -1;
-			# GEP+=eper
-			# if (eper/(h*w)>(50/100)):
-			# 	match=False
-			# 	for hi in range(i,(i+h)):
-			# 		for wj in range(j,(j+w)):
-			# 				adoimg[hi,wj]=[255,0,0];adnimg[hi,wj]=[255,0,0];
-	print(4,datetime.now())
-	print(match,cf,GEP,"DIFFERENT "+str( math.trunc((GEP*10000)/(IWIDTH*IHEIGHT))/100 )+"%")
 
 	# simg = Image.fromarray(adoimg)
 	# simg.save('io.jpg')
@@ -73,18 +100,11 @@ def compareIMG(cf, ioim ,inim, w=1, h=1, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 	# simg.save('in.jpg')
 	# simg.save(cf+"_OUT"+inim)
 
-	cv2.imwrite('io.jpg',adoimg)
-	cv2.imwrite('in.jpg',adnimg)
-	print(5,datetime.now())
 	# plt.imshow(adoimg)
 	# plt.show()
-	# plt.imshow(adnimg)
-	# plt.show()
-	return match
 
-def get_data(cf, btn, w=0, h=0, ipsx=0, ipsy=0, ipex=0, ipey=0) :
+def get_data(cf, w=0, h=0, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 	print('gs',datetime.now())
-
 	try:
 		shutil.rmtree(cf+"_OUT")
 	except FileNotFoundError as fnf:
@@ -96,6 +116,13 @@ def get_data(cf, btn, w=0, h=0, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 	for r, d, f in os.walk(cf): ncdir=d; break;
 	if (len(ncdir) != 2): return "Child Folders != 2 folders"
 
+	fwpa=open(cf+"_OUT_A1.txt","w+")
+	fwpa.write("----"+str(datetime.now())+"----\n")
+	fwpa.close()
+	fwpb=open(cf+"_OUT_A2.txt","w+")
+	fwpb.write("----"+str(datetime.now())+"----\n")
+	fwpb.close()
+
 	dofs = "\\"+ncdir[1]; dnfs = "\\"+ncdir[0];
 	infs=[]; iofs=[];
 	for r, d, f in os.walk(cf+dofs): iofs=d; break;
@@ -106,23 +133,23 @@ def get_data(cf, btn, w=0, h=0, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 		diofs=dofs+"\\"+iofs[i];dinfs=dnfs+"\\"+infs[i];
 		os.makedirs(cf+"_OUT"+diofs);os.makedirs(cf+"_OUT"+dinfs)
 		imofs=[];imnfs=[]
-		for r, d, f in os.walk(cf+diofs): imofs=f;odi=r; break;
-		for r, d, f in os.walk(cf+dinfs): imnfs=f;ndi=r; break;
+		for r, d, f in os.walk(cf+diofs): imofs=f; break;
+		for r, d, f in os.walk(cf+dinfs): imnfs=f; break;
 		imofs=sorted(imofs); imnfs=sorted(imnfs);
 		
 		if (len(imofs) != len(imnfs)): return "Image items To Compare are Different Length"
 		for j in range(len(imofs)):
-			# btn.SetLabel(str(j)+"/"+str(len(imofs))+" of "+str(i)+"/"+str(len(iofs)))
 			print('-------------------------------')
 			print('s',datetime.now())
-			print('----',diofs+"\\"+imofs[j],'----')
-			compareIMG(cf,diofs+"\\"+imofs[j],dinfs+"\\"+imnfs[j], 2, 2,ipex=-1,ipey=30)
+			compareIMG(cf,diofs+"\\"+imofs[j],dinfs+"\\"+imnfs[j], 30, 40,ipex=-1,ipey=30)
+			yield str(j+1)+"/"+str(len(imofs))+" of "+str(i+1)+"/"+str(len(iofs))
 			print('e',datetime.now())
-			break;
-		break;
+			print('-----',diofs+"\\"+imofs[j],'-----')
+#			break;
+#		break;
 
-	# btn.SetLabel("DONE!")
 	return "OK"
 
 COMPARE_FOLD = u".\\CompareFolder"
-print(get_data(COMPARE_FOLD,'btn'))
+for rs in get_data(COMPARE_FOLD):
+	print(rs == None)

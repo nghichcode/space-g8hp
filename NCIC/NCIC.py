@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*- 
-import os
-
 import wx
 import wx.xrc
 import wx.adv
@@ -8,10 +6,13 @@ import wx.lib.agw.hyperlink as hl
 from NCIC_IO import ncio
 import NCIC_Lib as ncl
 
+from threading import Thread
+from pubsub import pub
+
 COMPARE_FOLD = u".\\CompareFolder"
+STOP_THREAD=False
 
 class NCBox ( wx.Dialog ):
-	
 	def __init__(self, tbody, *args, **kw):
 		super(NCBox, self).__init__(*args, **kw)
 		parentBX = wx.BoxSizer( wx.VERTICAL )
@@ -142,7 +143,7 @@ class NcImageCheck ( wx.Frame ):
 		# CS8
 		bSizer4 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.m_button2 = wx.Button( sbSizerChild.GetStaticBox(), wx.ID_ANY, u"Execute!!!", wx.DefaultPosition, wx.Size( 120,80 ), 0 )
+		self.m_button2 = wx.Button( sbSizerChild.GetStaticBox(), wx.ID_ANY, u"Execute!!!", wx.DefaultPosition, wx.Size( 320,80 ), 0 )
 		self.m_button2.SetFont( wx.Font( 16, 70, 90, 92, False, wx.EmptyString ) )
 		self.m_button2.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNHIGHLIGHT ) )
 		bSizer4.Add( self.m_button2, 0, wx.ALIGN_CENTER_VERTICAL, 5 )
@@ -165,16 +166,30 @@ class NcImageCheck ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.on_exit, id = self.mitExit.GetId() )
 		self.Bind(wx.EVT_CLOSE, self.on_exit)
 		self.Bind( wx.EVT_MENU, self.on_about, id = self.mitAbout.GetId() )
+		pub.subscribe(self.updateDisplay, "update")
 	
 	def __del__( self ):
 		pass
 
 	# Virtual event handlers, overide them in your derived class
+	def updateDisplay(self,msg):
+		self.m_button2.SetLabel(msg)
+		if (msg=="success") :
+			self.m_button2.Enable()
+
 	def set_root_folder( self, event ):
+		global COMPARE_FOLD
 		COMPARE_FOLD = event.GetPath()
-		print("---------------")
-		print(event.GetPath())
+		print(COMPARE_FOLD)
 	
+	def ncth(self,cpfd, *kws):
+		w,h,ipsx,ipsy,ipex,ipey = kws
+		for rs in ncl.get_data(cpfd, w,h,ipsx,ipsy,ipex,ipey):
+			global STOP_THREAD
+			if (STOP_THREAD): break;
+			wx.CallAfter(pub.sendMessage, "update", msg=rs)
+		wx.CallAfter(pub.sendMessage, "update", msg="success")
+
 	def start_compare( self, event ):
 		try:
 			ipsx = int(self.m_textCtrl1.GetLineText(0))
@@ -184,9 +199,13 @@ class NcImageCheck ( wx.Frame ):
 			accw = int(self.m_textCtrl5.GetLineText(0))
 			acch = int(self.m_textCtrl6.GetLineText(0))
 		except ValueError as e:
-			print("ValueError")
+			print("ValueError",e)
 			return
-		ncl.get_data(COMPARE_FOLD,self.m_button2,accw,acch,ipsx,ipsy,ipex,ipey)
+		global COMPARE_FOLD
+		btn = event.GetEventObject()
+		btn.Disable()
+		NC_TH=Thread(target=self.ncth, args=(COMPARE_FOLD, accw,acch,ipsx,ipsy,ipex,ipey))
+		NC_TH.start()
 
 	def on_guide( self, event ):
 		nb=NCBox(
@@ -233,6 +252,8 @@ class NcImageCheck ( wx.Frame ):
 		nb.Show()
 
 	def on_exit( self, event ):
+		global STOP_THREAD
+		STOP_THREAD = True
 		self.Destroy()
 		wx.GetApp().ExitMainLoop()
 	
