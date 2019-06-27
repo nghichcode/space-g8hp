@@ -32,7 +32,7 @@ def compareIMG(cf, ioim ,inim, w=1, h=1, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 	if (ipey==-1): ipey=IHEIGHT
 	adoimg[ipsy:ipey,ipsx:ipex]=0
 	adnimg[ipsy:ipey,ipsx:ipex]=0
-	# NEW ALGO
+	# ALGO 1
 	NIWIDTH=(IWIDTH-(IWIDTH % w)) if (w>1) else IWIDTH
 	NIHEIGHT=IHEIGHT-(IHEIGHT % h) if (h>1) else IHEIGHT
 
@@ -64,8 +64,8 @@ def compareIMG(cf, ioim ,inim, w=1, h=1, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 	ndbimg = np.where(ndbimg/(w*h)>0.5,1,0 )
 	ndwimg = np.bitwise_or(ndsimg,ndbimg)
 	ndffff = 100 * ( 1-np.average(ndwimg) )
+	if (ndffff): match=False;
 	print(3, "{0:.4f}% diff".format(ndffff) )
-
 	# Diff ALGO 2
 	aasf = np.absolute(np.subtract( adoimg,adnimg ))
 #	absf = np.add( adoimg,adnimg )

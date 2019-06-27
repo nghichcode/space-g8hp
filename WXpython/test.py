@@ -51,11 +51,10 @@ atnimg = np.reshape(atnimg, (-1,int(4/h)) )
 #ndoimg = np.reshape(ndoimg, ())
 #ndnimg = adnimg[0:IWIDTH,0:IHEIGHT]
 
-np.
-print(atnimg)
-print(0.9>2)
-for r in range(10,0,-1):
-	print(r)
+#print(atnimg)
+#print(0.9>2)
+#for r in range(10,0,-1):
+#	print(r)
 #s=np.sum(np.where(adoimg>0,1,0))
 #
 #def cc(a, *kw):
