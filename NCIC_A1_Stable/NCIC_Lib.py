@@ -110,7 +110,7 @@ def get_data(cf, w=0, h=0, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 	except FileNotFoundError as fnf:
 		print(fnf)
 	except OSError as ose:
-		print(ose)
+		print("OSE",ose)
 
 	ncdir = []
 	for r, d, f in os.walk(cf): ncdir=d; break;
@@ -150,6 +150,6 @@ def get_data(cf, w=0, h=0, ipsx=0, ipsy=0, ipex=0, ipey=0) :
 
 	return "OK"
 
-COMPARE_FOLD = u".\\CompareFolder"
-for rs in get_data(COMPARE_FOLD):
-	print(rs == None)
+# COMPARE_FOLD = u".\\CompareFolder"
+# for rs in get_data(COMPARE_FOLD):
+# 	print(rs == None)
