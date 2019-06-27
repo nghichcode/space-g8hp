@@ -1,0 +1,14 @@
++Js & NodeJs snippets
++Js prettier
+	# NPM INSTALL
+	npm install --global prettier
+
++Emmet
++Babel
++Babel snippets
++SublimeCodeIntel
+
++AutoFileName
+
+[ Options ]
+Anaconda snippets - Python
