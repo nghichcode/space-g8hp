@@ -1,2 +1,0 @@
-python SPL.py
-cmd

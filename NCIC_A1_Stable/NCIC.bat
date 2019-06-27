@@ -1,2 +1,0 @@
-python NCIC.py
-cmd
