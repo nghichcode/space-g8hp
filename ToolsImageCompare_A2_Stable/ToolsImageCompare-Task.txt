@@ -1,0 +1,66 @@
+Ref
+http://openbookproject.net/thinkcs/python/english3e/conditionals.html
+https://www.mkyong.com/python/python-how-to-list-all-files-in-a-directory/
+http://scipy-lectures.org/advanced/image_processing/#id26
+https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
+https://www.pyimagesearch.com/2017/06/19/image-difference-with-opencv-and-python/
+https://scikit-image.org/docs/dev/api/skimage.measure.html#skimage.measure.compare_psnr
+https://scikit-image.org/docs/dev/auto_examples/transform/plot_ssim.html
+
++ Lên test case
++ Evidence
++ Fix bug
+
+-	Yêu cầu: Tiếp tục hoàn thành tools compare ảnh
+o	Tài liệu kỹ thuật về kiến trúc, cài đặt, cấu hình và luồng hoạt động logic.
+o	Tài liệu hướng dẫn sử dụng.
+-	Input:
+o	Người dùng sẽ chọn 1 folder chứa ảnh gốc và 1 folder chứa ảnh kết quả test thực tế (các ảnh này có thể khác nhau phần banner/header/footer, tên ảnh cũng không giống nhau) sắp xếp ảnh theo thứ tự thời gian tạo/modify
+-	Output: Kết quả là 1 file csv hiển thị các cột: Tên folder, đường dẫn file gốc, đường dẫn file so sánh(đánh dấu sự khác biệt nếu có), kết quả so sánh(OK hoặc NG nếu 2 ảnh khác nhau ngoại trừ phần banner/header/footer)
+.
+.
+Yêu cầu có tài liệu thiết kế và hướng dẫn cụ thể)
+
+```text
+0. Your folders must have same length of image :
+* Example
+	|-\Old_Image_Folder\image00A.png
+	|-\Old_Image_Folder\image01A.png
+	...
+	|-\Old_Image_Folder\FolderToCpx1
+	|-\Old_Image_Folder\FolderToCpx1\image1A.png
+	|-\Old_Image_Folder\FolderToCpx1\image2A.png
+	...
+	|-\Old_Image_Folder\FolderToCpx2
+	|-\Old_Image_Folder\FolderToCpx2\image3A.png
+	|-\Old_Image_Folder\FolderToCpx2\image4A.png
+	...
+	|-\New_Image_Folder\image00B.png
+	|-\New_Image_Folder\image01B.png
+	...
+	|-\New_Image_Folder\FolderToCpx1
+	|-\New_Image_Folder\FolderToCpx1\image1B.png
+	|-\New_Image_Folder\FolderToCpx1\image2B.png
+	...
+	|-\New_Image_Folder\FolderToCpx2
+	|-\New_Image_Folder\FolderToCpx2\image3B.png
+	|-\New_Image_Folder\FolderToCpx2\image4B.png
+	...
+	...
+.
+1. Step 1: Click Browse to choose your folder.
+.
+* Default is : ".\CompareFolder"
+.
+2. Step 2: Set ignore point (pixel)
+* IP is ignore point. You must set Top(x,y) and Bottom(x,y) ignore point!	
+* Require : Top<Bottom .
+* Enter -1 => ignore all
+	Example : Top(0,0) , Bottom(-1,40) : Ignore all from (0,0) to ([image_width],40)
+.
+3. Step 3: Set Accurate (%).
+	Example : 1.5%
+4. Step 4: Click Execute.
+	Result in ".\[parent_of_old_folder]\RESULT_OUT"
+	AND .\[parent_of_old_folder]\RESULT_OUT_A2.csv
+```

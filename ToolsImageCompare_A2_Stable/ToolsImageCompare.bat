@@ -1,0 +1,2 @@
+python ToolsImageCompare.py
+cmd

@@ -1,0 +1,1 @@
+pyinstaller ToolsCSVCompare.py --onefile -w -i ToolsCSVCompare.ico

@@ -1,0 +1,1 @@
+pyinstaller ToolsImageCompare.py --onefile -w -i ToolsImageCompare.ico

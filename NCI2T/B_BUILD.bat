@@ -1,0 +1,1 @@
+pyinstaller NCI2T.py --onefile -w -i NCI2T.ico
